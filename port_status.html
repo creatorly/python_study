@@ -1,0 +1,314 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache, must-revalidate"/>
+<meta http-equiv="expires" content="0"/>
+<title>Port Status</title>
+<link rel="stylesheet" type="text/css" href="style.css?file_ver=8eed8da3512a7402faa6b5679eafc9be"/>
+<script type="text/javascript" src="en.gzjs?file_ver=1ff61016c2180662bee28ca7cb7020de"></script>
+<script type="text/javascript" src="jquery-1.6.4.min.gzjs"></script>
+<script type="text/javascript" src="common.gzjs?file_ver=af9ca6431f4896033cb79cbdb7c405c1"></script>
+<script>
+var slotsPerPort = parseInt("4");
+
+window.onload=function(){
+    setDocScrollTop(parseInt("0"));
+	setTimeout(refreshPage, 10000);
+};
+
+
+function refreshPage() {
+    $("#ID_Hidden_ScrollTop").val(getDocScrollTop());
+    document.forms[0].submit();
+}
+
+function goipLoadLedStatus(idDivLedStatus, strData) {
+    var objListData = eval('('+strData+')');
+    var iTabNum = parseInt((objListData.data.length+7)/8);
+    var strHtml = "";
+    var abc = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P'];
+
+    var flag = false;
+    if(slotsPerPort>8){
+         flag = true;
+    }
+    for (var i=0; i<iTabNum; i++) {
+        var nPorts = Math.min(8, objListData.data.length);
+
+        // generate the table header
+        strHtml +=
+            '<table class="listBox2" width="100%" align="center" cellSpacing="0" cellPadding="0" style="margin:0 0 10px 0;">' +
+                '<thead><tr><th style="width:12%;"><span mytitle="L_Port"></span></th>';
+		for (var j=0; j<nPorts; j++) {
+            strHtml += '<th style="width:11%;">' + (8*i+j+1) + '</th>';
+        }
+        strHtml += '</tr></thead>';
+
+        // append the tr of the table, skip the record id
+        var len = (objListData.data[0].length-1)/2 +1;
+        for (var j=1; j<len; j++) {
+            var slotName = abc[j-1];
+            if(flag){
+                slotName ="."+toDec2(j)
+            }
+			if(slotsPerPort<=1){
+			    slotName = "";
+			}
+            strHtml += '<tr><td>'+slotName+'</td>';
+            for (var k=0; k<nPorts; k++) {
+                var titleStr ="";
+                var reason = objListData.data[8*i+k][j*2];
+                if(reason!=""){
+                     titleStr =" title=\""+reason+"\"";
+                }
+                strHtml += '<td '+titleStr+' class="light_'+objListData.data[8*i+k][j*2-1]+'"></td>';
+            }
+            strHtml += '</tr>';
+        }
+
+        // add the table end
+        strHtml += '</table>'
+    }
+
+    // insett the tables to led status <div>
+    var objStatus = $("#"+idDivLedStatus);
+    objStatus.html(strHtml + objStatus.html());
+}
+
+function goipLoadBalance(idDivBalance, strData) {
+    var objListData = eval('('+strData+')');
+    var iTabNum = parseInt((objListData.data.length+7)/8);
+    var strHtml = "";
+    var abc = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P'];
+    var flag = false;
+    if(objListData.data[0].length>9){
+         flag = true;
+    }
+    for (var i=0; i<iTabNum; i++) {
+        var nPorts = Math.min(8, objListData.data.length);
+
+        // generate the table header
+        strHtml +=
+            '<table class="listBox2" width="100%" align="center" cellSpacing="0" cellPadding="0" style="margin:0 0 10px 0;">' +
+                '<thead><tr><th style="width:12%;"><span mytitle="L_Port"></span></th>';
+        for (var j=0; j<nPorts; j++) {
+            strHtml += '<th style="width:11%;">' + (8*i+j+1) + '</th>';
+        }
+        strHtml += '</tr></thead>';
+
+        // append the tr of the table, skip the record id
+        for (var j=1; j<objListData.data[0].length; j++) {
+            var slotName = abc[j-1];
+            if(flag){
+                slotName ="."+toDec2(j)
+            }
+			if(slotsPerPort<=1){
+			    slotName = "";
+			}
+            strHtml += '<tr><td>'+slotName+'</td>';
+            for (var k=0; k<nPorts; k++) {
+                strHtml += '<td>'+objListData.data[8*i+k][j]+'</td>';
+            }
+            strHtml += '</tr>';
+        }
+
+        // add the table end
+        strHtml += '</table>'
+    }
+
+    // insett the tables to led status <div>
+    var objBalance = $("#"+idDivBalance);
+    objBalance.html(strHtml + objBalance.html());
+}
+</script>
+</head>
+
+<body>
+
+<form action="" method="post" name="form1">
+    <input type="hidden" id="ID_Hidden_ScrollTop" name="scroll_top" value="0"/>
+</form>
+
+<div class="pageTitle configPageTitleBg"><span mytitle="L_PortStatus"></span></div>
+
+<div class="pageBody">
+    <div class="infoBox" id="SipStatusBox">
+        <div class="infoBoxHeader">
+            <div class="infoBoxHeaderText"><span mytitle="L_SIPClientStatus"></span></div>
+            <div class="infoBoxHeaderOpt">
+                <a class="toCollapse" id="ID_SipStatusBox_A" href="javascript:void(0);" onclick="displayBoxData('SipStatusBox')"><span mytitle="L_Collapse"></span></a>
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div class="infoBoxBody" id="ID_SipStatusBox_Body">
+            <table class="inputBox" width="100%" align="center" cellSpacing="0" cellPadding="0">
+                <tr><td class="inputLable"><span mytitle="L_ServerIP"></span>:</td><td class="infoValue">:5060</td>
+                    <td class="inputLable"><span mytitle="L_RegistrationStatus"></span>:</td><td class="infoValue">FAIL</td><td></td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="infoBox" id="GoipPortLightBox">
+        <div class="infoBoxHeader">
+            <div class="infoBoxHeaderText"><span mytitle="L_PortLED"></span></div>
+            <div class="infoBoxHeaderOpt">
+                <a class="toCollapse" id="ID_GoipPortLightBox_A" href="javascript:void(0);" onclick="displayBoxData('GoipPortLightBox')"><span mytitle="L_Collapse"></span></a>
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div class="infoBoxBody" id="ID_GoipPortLightBox_Body">
+            <table class="listBox2" width="100%" align="center" cellSpacing="0" cellPadding="0">
+                <tr align="left">
+                    <td align="left" width="10%"><span mytitle="L_Note"></span>:</td>
+                    <td align="left" width="19%">
+                        <div class="dlight_1" style="float:left;"></div>
+                        <div style="text-align:left;"><span mytitle="L_CardDetected"></span></div></td>
+                    <td align="left" width="20%">
+                        <div class="dlight_11" style="float:left;"></div>
+                        <div style="text-align:left;"><span mytitle="L_CardInserted"></span></div></td>
+                    <td align="left"width="22%">
+                        <div class="dlight_2" style="float:left;"></div>
+                        <div style="text-align:left;"><span mytitle="L_RegisteringCard"></span></div></td>
+                    <td align="left"width="23%">
+                        <div class="dlight_3" style="float:left;"></div>
+                        <div style="text-align:left;"><span mytitle="L_RegisterOK"></span></div></td>
+                    <td align="left"width="16%">
+                        <div class="dlight_4" style="float:left;"></div>
+                        <div style="text-align:left;"><span mytitle="L_Calling"></span></div></td>
+                    </tr>
+                <tr align="left">
+                    <td></td>
+                    <td><div class="dlight_13" style="float:left;"></div>
+                        <div style="text-align:left;"><span mytitle="L_PortInterCalling"></span></div></td>
+                    <td><div class="dlight_14" style="float:left;"></div>
+                        <div style="text-align:left;"><span mytitle="L_InterCallingHolding"></span></div></td>
+                    <td><div class="dlight_5" style="float:left;"></div>
+                        <div style="text-align:left;"><span mytitle="L_NoBalance"></span></div></td>
+                    <td><div class="dlight_6" style="float:left;"></div>
+                        <div style="text-align:left;"><span mytitle="L_RegisterFailed"></span></div></td>
+                    <td><div class="dlight_7" style="float:left;"></div>
+                        <div style="text-align:left;"><span mytitle="L_SimLocked"></span></div></td>
+                    </tr>
+                <tr align="left">
+                    <td></td>
+                    <td><div class="dlight_8" style="float:left;"></div>
+                        <div style="text-align:left;"><span mytitle="L_LockedByOperator"></span></div></td>
+                    <td><div class="dlight_12" style="float:left;"></div>
+                        <div style="text-align:left;"><span mytitle="L_LockedByUser"></span></div></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    </tr>
+            </table>
+        </div>
+        <script language="javascript"><!--
+            goipLoadLedStatus("ID_GoipPortLightBox_Body", '{"result":0, "count":32, "data":[[1,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [2,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [3,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [4,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [5,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [6,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [7,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [8,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [9,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [10,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [11,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [12,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [13,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [14,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [15,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [16,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [17,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [18,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [19,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [20,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [21,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [22,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [23,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [24,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [25,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [26,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [27,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [28,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [29,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [30,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [31,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"], [32,0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted",0,"SIM not inserted"]]}');
+        --></script>
+    </div>
+
+    <div class="infoBox" id="GoipPortBalanceBox">
+        <div class="infoBoxHeader">
+            <div class="infoBoxHeaderText"><span mytitle="L_PortBalance"></span></div>
+            <div class="infoBoxHeaderOpt">
+                <a class="toCollapse" id="ID_GoipPortBalanceBox_A" href="javascript:void(0);" onclick="displayBoxData('GoipPortBalanceBox')"><span mytitle="L_Collapse"></span></a>
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div class="infoBoxBody" id="ID_GoipPortBalanceBox_Body">
+        </div>
+        <script language="javascript"><!--
+            goipLoadBalance("ID_GoipPortBalanceBox_Body", '{"result":0, "count":32, "data":[[1,"0.00","0.00","0.00","0.00"], [2,"0.00","0.00","0.00","0.00"], [3,"0.00","0.00","0.00","0.00"], [4,"0.00","0.00","0.00","0.00"], [5,"0.00","0.00","0.00","0.00"], [6,"0.00","0.00","0.00","0.00"], [7,"0.00","0.00","0.00","0.00"], [8,"0.00","0.00","0.00","0.00"], [9,"0.00","0.00","0.00","0.00"], [10,"0.00","0.00","0.00","0.00"], [11,"0.00","0.00","0.00","0.00"], [12,"0.00","0.00","0.00","0.00"], [13,"0.00","0.00","0.00","0.00"], [14,"0.00","0.00","0.00","0.00"], [15,"0.00","0.00","0.00","0.00"], [16,"0.00","0.00","0.00","0.00"], [17,"0.00","0.00","0.00","0.00"], [18,"0.00","0.00","0.00","0.00"], [19,"0.00","0.00","0.00","0.00"], [20,"0.00","0.00","0.00","0.00"], [21,"0.00","0.00","0.00","0.00"], [22,"0.00","0.00","0.00","0.00"], [23,"0.00","0.00","0.00","0.00"], [24,"0.00","0.00","0.00","0.00"], [25,"0.00","0.00","0.00","0.00"], [26,"0.00","0.00","0.00","0.00"], [27,"0.00","0.00","0.00","0.00"], [28,"0.00","0.00","0.00","0.00"], [29,"0.00","0.00","0.00","0.00"], [30,"0.00","0.00","0.00","0.00"], [31,"0.00","0.00","0.00","0.00"], [32,"0.00","0.00","0.00","0.00"]]}');
+        --></script>
+    </div>
+
+    <div class="infoBox" id="GoipPortStatusBox">
+        <div class="infoBoxHeader">
+            <div class="infoBoxHeaderText"><span mytitle="L_PortStatus"></span></div>
+            <div class="infoBoxHeaderOpt">
+                <a class="toCollapse" id="ID_GoipPortStatusBox_A" href="javascript:void(0);" onclick="displayBoxData('GoipPortStatusBox')"><span mytitle="L_Collapse"></span></a>
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div class="infoBoxBody" id="ID_GoipPortStatusBox_Body">
+            <table id="ID_TabPortStatus" class="listBox2" width="100%" align="center" cellSpacing="0" cellPadding="0">
+                <thead><tr><th style="width:5%;"><span mytitle="L_Port"></span></th>
+                        <th style="width:10%;"><span mytitle="L_SIM"></span></th>
+						<th style="width:17%;"><span mytitle="L_SIMNumber"></span></th>
+						<th style="width:10%;"><span mytitle="L_Balance"></span></th>
+
+                        <!-- <th style="width:8%;">Data Port</th> -->
+                        <th style="width:8%;"><span mytitle="L_Module"></span></th>
+                        <th style="width:10%;"><span mytitle="L_Registered"></span></th>
+                        <th style="width:11%;"><span mytitle="L_Operator"></span></th>
+                        <!-- <th style="width:16%;"><span mytitle="L_OperatorName"></span></th> -->
+                        <th style="width:9%;"><span mytitle="L_Network"></span></th>
+                        <th style="width:9%;"><span mytitle="L_Signal"></span></th>
+                        <th style="width:23%;"><span mytitle="L_Description"></span></th>
+						<!-- <th><span mytitle="L_SMSCount"></span></th> --></tr>
+                </thead>
+            </table>
+            <script language="javascript"><!--
+			    var call_status = '{"result":0, "count":32, "data":[[1,"1A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [2,"2A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [3,"3A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [4,"4A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [5,"5A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [6,"6A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [7,"7A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [8,"8A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [9,"9A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [10,"10A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [11,"11A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [12,"12A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [13,"13A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [14,"14A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [15,"15A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [16,"16A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [17,"17A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [18,"18A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [19,"19A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [20,"20A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [21,"21A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [22,"22A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [23,"23A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [24,"24A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [25,"25A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [26,"26A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [27,"27A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [28,"28A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [29,"29A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [30,"30A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [31,"31A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "], [32,"32A","GSM","HANGUP","","0.00","No SIM Card","0 ","0 "]]}';
+                var strPortStatus = '{"result":0, "count":32, "data":[[1,1,"A","Yes","No","","","","",0,"","0.00"], [2,2,"A","Yes","No","","","","",0,"","0.00"], [3,3,"A","Yes","No","","","","",0,"","0.00"], [4,4,"A","Yes","No","","","","",0,"","0.00"], [5,5,"A","Yes","No","","","","",0,"","0.00"], [6,6,"A","Yes","No","","","","",0,"","0.00"], [7,7,"A","Yes","No","","","","",0,"","0.00"], [8,8,"A","Yes","No","","","","",0,"","0.00"], [9,9,"A","Yes","No","","","","",0,"","0.00"], [10,10,"A","Yes","No","","","","",0,"","0.00"], [11,11,"A","Yes","No","","","","",0,"","0.00"], [12,12,"A","Yes","No","","","","",0,"","0.00"], [13,13,"A","Yes","No","","","","",0,"","0.00"], [14,14,"A","Yes","No","","","","",0,"","0.00"], [15,15,"A","Yes","No","","","","",0,"","0.00"], [16,16,"A","Yes","No","","","","",0,"","0.00"], [17,17,"A","Yes","No","","","","",0,"","0.00"], [18,18,"A","Yes","No","","","","",0,"","0.00"], [19,19,"A","Yes","No","","","","",0,"","0.00"], [20,20,"A","Yes","No","","","","",0,"","0.00"], [21,21,"A","Yes","No","","","","",0,"","0.00"], [22,22,"A","Yes","No","","","","",0,"","0.00"], [23,23,"A","Yes","No","","","","",0,"","0.00"], [24,24,"A","Yes","No","","","","",0,"","0.00"], [25,25,"A","Yes","No","","","","",0,"","0.00"], [26,26,"A","Yes","No","","","","",0,"","0.00"], [27,27,"A","Yes","No","","","","",0,"","0.00"], [28,28,"A","Yes","No","","","","",0,"","0.00"], [29,29,"A","Yes","No","","","","",0,"","0.00"], [30,30,"A","Yes","No","","","","",0,"","0.00"], [31,31,"A","Yes","No","","","","",0,"","0.00"], [32,32,"A","Yes","No","","","","",0,"","0.00"]]}';
+                var esp_enable = '0';
+
+                var network_type = ["NA", "", "2G", "3G", "4G", "5G"];
+
+				var strArr = new Array(strPortStatus, call_status);
+                var colArr = new Array([0,1,2,3,4,5,6,7,8,9,10,11],[6]);
+                var strPortStatus_f = combineListData(strArr,colArr);
+
+                loadListData("ID_TabPortStatus", strPortStatus_f, function(i, cols){
+                    // [0]: seq, [1]: portno, ...
+                    var network = "";
+                    if(cols[5]!=""){
+                         network = network_type[cols[9]];
+                    }
+                    var trStr = new TrStr(cols[1], cols[2], cols[10], cols[11], cols[3], cols[4], "<span title='"+cols[6]+"'>"+cols[5]+"<span>", network);
+                    var signal = parseInt(cols[7]);
+
+                    if (isNaN(signal)) {
+                      //  trStr.add('', cols[8]);
+					  trStr.add('');
+                    } else {
+                        var siglev;
+
+                        if(signal<=4 || signal>31){
+                            signal = 0;
+                            siglev = 0;
+                        }else if(signal<=8){
+                            siglev = 1;
+                        }else if(signal<=13){
+                            siglev = 2;
+                        }else if(signal<=18){
+                            siglev = 3;
+                        }else if(signal<=24){
+                            siglev = 4;
+                        }else{
+                            siglev = 5;
+                        }
+
+                        if (signal < 10) {
+                            signal = '&ensp;' + signal;
+                        }
+
+                      //  trStr.add('<img class="signal" src="signal'+siglev+'.png"/>&nbsp;'+signal, cols[8]);
+					     trStr.add('<img class="signal" src="signal'+siglev+'.png"/>&nbsp;'+signal);
+                    }
+					trStr.add(cols[12]);
+
+                    return trStr.getTr();
+                });
+
+                setTabBgColor("ID_TabPortStatus", ["#ffffff", "#dddddd"]);
+                setTabBgColorOnMouse("ID_TabPortStatus","#bbbbbb");
+            --></script>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

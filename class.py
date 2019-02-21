@@ -64,7 +64,6 @@ print(s.score)  # OK，实际转化为s.get_score()
 #s.score = 9999
 
 
-
 class Student3(object):
     def __init__(self, name):
         self.name = name
@@ -109,3 +108,18 @@ def main():
     print('99 + 88 + 7.6 =', r)
 
 main()
+
+
+class Student(object):
+    def __init__(self):
+        self.a = 1
+        self.b = 2
+
+    def number(self):
+        for i, j in vars(self).items():
+            print(i,j)
+
+s = Student()
+s.number()
+s.name = 'ejoin'
+s.number()

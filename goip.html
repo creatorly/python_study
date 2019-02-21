@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>Bootstrap 101 Template</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <h1>你好，世界！</h1>
+
+    <div class="form-group">
+     <label for="exampleInputEmail1">订阅的主题：chat</label>
+   </div>
+   <div class="form-group">
+     <label for="exampleInputEmail1">websocket：www.liefyuan.com:9001</label>
+   </div>
+   <div class="form-group">
+     <label for="exampleInputEmail1">mqtt：www.liefyuan.com:1883</label>
+   </div>
+
+    <div class="form-group">
+    <input type="email" class="form-control" id="msg" placeholder="输入要发送的消息">
+    <button type="submit"  onclick="sendMsg()"class="btn btn-default">发送</button>
+   </div>
+
+   <div class="form-group">
+     <label for="exampleInputEmail1">收到的消息:</label>
+   </div>
+   <div class="form-group">
+    <textarea class="form-control" rows="10" id="messageShow"></textarea>
+  </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+
+    <!--<script src="https://cdn.bootcss.com/paho-mqtt/1.0.2/mqttws31.js"></script>-->
+
+    <script src="https://cdn.bootcss.com/paho-mqtt/1.0.2/mqttws31.min.js"></script>
+
+    <script type="text/javascript">
+
+            client = new Paho.MQTT.Client("www.liefyuan.top", Number(9001), "websockets-test");//建立客户端实例
+            client.connect({onSuccess:onConnect});//连接服务器并注册连接成功处理事件
+            function onConnect() {
+                console.log("onConnected");
+                client.subscribe("chat");//订阅主题
+                console.log("subscribed");
+                //发送消息
+            message = new Paho.MQTT.Message("helloWS");
+            message.destinationName = "chat";
+            client.send(message);
+            console.log("sended")
+
+            }
+            client.onConnectionLost = onConnectionLost;//注册连接断开处理事件
+            client.onMessageArrived = onMessageArrived;//注册消息接收处理事件
+            function onConnectionLost(responseObject) {
+                if (responseObject.errorCode !== 0) {
+                    console.log("onConnectionLost:"+responseObject.errorMessage);
+                    console.log("连接已断开");
+                 }
+            }
+            function onMessageArrived(message) {
+              console.log("收到消息:"+message.payloadString);
+              document.getElementById("messageShow").value+=message.payloadString;
+              document.getElementById("messageShow").value+="\n";
+            }
+
+            function sendMsg() {
+               message = new Paho.MQTT.Message(document.getElementById("msg").value);
+               message.destinationName = "chat";
+               client.send(message);
+               console.log("sended")
+            }
+
+    </script>
+
+  </body>
+</html>

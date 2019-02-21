@@ -154,3 +154,18 @@ elif s != 7986:
     print('测试失败!')
 elif t != 7986:
     print('测试失败!')
+
+
+#######################练习###########################
+#一个字符串中字母出现的次数，出现前三的字幕
+str = "dsffsd lksjdflkjsdalje[p weolds sdjfsdkljfj[peow-0w0w9eurerhfgkmn;xalsd;aoierp9483-730lkdsla"
+
+L = {}
+
+for char in str:
+    if char == ' ':
+        continue
+    L[char] = L.get(char,0) + 1
+
+print(L)
+print(sorted(L.items(), key=lambda x:x[1], reverse=True)[:3])
